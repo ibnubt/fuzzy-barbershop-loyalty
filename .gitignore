@@ -1,0 +1,34 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment (symlink to parent project venv)
+.venv
+.venv/
+venv/
+
+# Pytest
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.bbl
+*.blg
+*.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+
+# IDE
+.vscode/
+.idea/
+.cursorignore
