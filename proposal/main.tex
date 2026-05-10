@@ -35,7 +35,7 @@
 Departemen Teknik Elektro dan Teknologi Informasi\\
 Universitas Gadjah Mada\\
 ibnubagustrisnandi@ugm.ac.id}
-\thanks{Proposal Tugas Mata Kuliah Sistem Pakar / Kecerdasan Buatan, Mei 2026.}
+\thanks{Proposal Tugas Mata Kuliah Sistem Cerdas, Mei 2026.}
 }
 
 \maketitle
@@ -48,7 +48,7 @@ loncatan tajam di sekitar batas tier, sehingga selisih Rp~1.000 saja bisa
 mengubah diskon dari 5\% ke 10\%. Kedua, profil pelanggan yang punya dua sisi
 loyalitas berbeda, misal jarang datang tetapi sekali datang nilai
 transaksinya tinggi, tidak mendapat perlakuan yang adil. Saya merancang
-sebuah sistem pakar berbasis fuzzy Mamdani dengan dua input (frekuensi
+sebuah sistem cerdas berbasis fuzzy Mamdani dengan dua input (frekuensi
 kunjungan per bulan, total spending bulan berjalan) dan satu output (diskon
 0--25\%) yang menggunakan sembilan aturan IF--THEN. Membership function disusun
 mengikuti tarif barbershop Jakarta 2024--2025: cukur basic Rp~80--100k, premium
@@ -60,7 +60,7 @@ bertingkat hanya dapat 10\%, sedangkan dengan sistem fuzzy ini dia dapat 15\%.
 \end{abstract}
 
 \begin{IEEEkeywords}
-sistem pakar, fuzzy logic, Mamdani, loyalitas pelanggan, barbershop, Jakarta.
+sistem cerdas, fuzzy logic, Mamdani, loyalitas pelanggan, barbershop, Jakarta.
 \end{IEEEkeywords}
 
 \section{Pendahuluan}
@@ -126,8 +126,8 @@ Konsep himpunan fuzzy diperkenalkan Zadeh~\cite{zadeh1965}, yang membolehkan
 derajat keanggotaan di interval $[0, 1]$ alih-alih biner. Mamdani dan
 Assilian~\cite{mamdani1975} menerjemahkan ide ini ke kontroler berbasis
 aturan IF--THEN; struktur tersebut, dengan min sebagai t-norm dan max
-sebagai agregator, masih menjadi default untuk sistem pakar fuzzy yang
-membutuhkan interpretabilitas tinggi. Alternatifnya, formulasi
+sebagai agregator, masih menjadi default untuk sistem cerdas berbasis
+fuzzy yang membutuhkan interpretabilitas tinggi. Alternatifnya, formulasi
 Takagi-Sugeno-Kang~\cite{takagi1985} memetakan antesedan ke fungsi konsequen
 polinomial; cocok untuk kontrol presisi tetapi mengorbankan kejelasan
 aturan yang penting di domain decision-support.
