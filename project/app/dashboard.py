@@ -189,7 +189,7 @@ with tab3:
     c1, c2, c3 = st.columns(3)
     c1.metric("Rata-rata diskon fuzzy", f"{cmean:.2f}%")
     c2.metric("Rata-rata diskon skema bertingkat", f"{bmean:.2f}%")
-    c3.metric("Selisih MAE", f"{(df['selisih']).abs().mean():.2f}")
+    c3.metric("Rata-rata selisih absolut", f"{(df['selisih']).abs().mean():.2f}%")
 
     st.dataframe(df, use_container_width=True, hide_index=True)
 

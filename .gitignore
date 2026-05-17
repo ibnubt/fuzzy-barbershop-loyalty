@@ -32,3 +32,8 @@ venv/
 .vscode/
 .idea/
 .cursorignore
+
+# Dokumentasi teknis (lokal saja, jangan push)
+project/DOKUMENTASI_TEKNIS.md
+project/DOKUMENTASI_TEKNIS.docx
+project/docs/

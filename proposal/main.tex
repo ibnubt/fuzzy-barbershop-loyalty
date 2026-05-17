@@ -82,14 +82,20 @@ Rp~150~ribu memberi 5\%, Rp~250~ribu memberi 10\%, dan Rp~400~ribu
 memberi 20\%. Ada dua kelemahan operasional pada cara berhitung
 seperti ini, dan keduanya akan saya bahas berurutan.
 
-\textbf{Kelemahan pertama: profil multi-dimensi tidak terbaca.}
-Kunjungan keempat dengan spending tinggi, katakanlah empat kali ambil
-paket Rp~250.000 (total Rp~1~juta), tetap berada di tingkatan Bronze
-karena syarat ``minimal lima kunjungan'' belum tercapai. Pelanggan yang
-profilnya ``empat kali sebulan, total Rp~1~juta'' diperlakukan sama
-dengan pelanggan ``empat kali sebulan, total Rp~350~ribu''. Frekuensi
-dan spending dua-duanya mencerminkan loyalitas, tetapi skema bertingkat
-hanya melihat satu sumbu pada satu waktu.
+\textbf{Kelemahan pertama: profil yang berbeda dipukul rata.} Bayangkan
+dua pelanggan dengan profil yang sangat berbeda. Yang pertama, sebut
+saja Pak Budi, datang sekali sebulan ambil paket grooming Rp~350.000.
+Yang kedua, Mas Andi, marketing yang harus rapi setiap minggu, datang
+tiga kali sebulan untuk paket cuci dan cukur Rp~110.000 sekali datang
+(total Rp~330.000). Di skema bertingkat tadi, keduanya dapat tier yang
+sama 10\%. Pak Budi karena spending-nya melewati ambang Rp~250.000,
+Mas Andi karena spending-nya juga melewati ambang yang sama dan
+kunjungannya melewati ambang lain (tiga kali). Tetapi profil mereka
+secara intuitif berbeda. Yang satu pelanggan ``jarang tapi premium'',
+yang satu ``rajin dengan paket menengah''. Skema bertingkat tidak punya
+cara untuk membedakan kedua pola itu karena outputnya cuma empat nilai
+diskrit (0\%, 5\%, 10\%, dan 20\%), dan semua pelanggan yang melewati
+ambang yang sama dapat diskon yang sama persis.
 
 \textbf{Kelemahan kedua: loncatan tarif di sekitar ambang.} Karena
 ambang dipasang persis di angka tertentu, pelanggan dengan spending
@@ -173,13 +179,18 @@ pekerja kantoran biasa.
 
 Variabel input kedua adalah \emph{spending bulan berjalan} dalam universe
 $[0, 600]$ ribu Rupiah, dengan tiga linguistik \texttt{low},
-\texttt{medium}, \texttt{high}. Anchor yang saya pakai:
+\texttt{medium}, \texttt{high}. Bentuk MF saya pakai trapezoid pada dua
+ujung (low dan high) dan triangle di tengah (medium). Koordinat
+anchor yang saya pakai:
 \begin{itemize}
-\item \texttt{low}: Rp~0--100k --- satu kali cukur basic.
-\item \texttt{medium}: Rp~125--350k --- premium 1$\times$ atau basic
-2--3$\times$.
-\item \texttt{high}: Rp~275--600k --- paket grooming, beberapa kunjungan
-premium, atau member tahunan.
+\item \texttt{low}: trapezoid $[0, 0, 100, 175]$, artinya derajat
+keanggotaan penuh ($\mu=1$) pada rentang Rp~0--100k, lalu turun ke 0
+di Rp~175k. Mewakili profil sekali cukur basic.
+\item \texttt{medium}: triangle $[125, 225, 350]$, puncak di Rp~225k.
+Mewakili premium 1$\times$ atau basic 2--3$\times$.
+\item \texttt{high}: trapezoid $[275, 400, 600, 600]$, naik dari
+Rp~275k dan plateau penuh dari Rp~400k ke atas. Mewakili paket
+grooming, beberapa kunjungan premium, atau member tahunan.
 \end{itemize}
 Batas atas Rp~600.000 sebulan saya ambil sebagai estimasi tarif paket
 tertinggi di Jakarta yang masih bisa diakses pelanggan reguler (bukan
@@ -187,9 +198,12 @@ korporat).
 
 Output adalah \emph{persentase diskon untuk kunjungan berikutnya}, di
 $[0, 25]\%$. Empat linguistik: \texttt{none}, \texttt{small},
-\texttt{medium}, \texttt{large}. Saya cap di 25\% sebagai batas operasional. Margin barbershop biasanya
-30--40\%, jadi diskon di atas 25\% akan terlalu agresif buat
-sustainability bisnis.
+\texttt{medium}, \texttt{large}. Di kode dan dashboard saya pakai
+nama Bahasa Indonesia (``Tidak Ada'', ``Kecil'', ``Sedang'', ``Besar'')
+yang dipetakan ke kategori yang sama. Saya cap output di 25\% sebagai
+batas operasional. Margin barbershop kelas menengah berdasarkan
+pengamatan informal saya berkisar 30--40\%, jadi diskon di atas 25\%
+akan terlalu agresif buat sustainability bisnis.
 
 Untuk linguistik di pinggir universe (\texttt{rare}, \texttt{frequent},
 \texttt{low}, \texttt{high}, \texttt{none}, \texttt{large}) saya pakai
@@ -292,17 +306,21 @@ untuk mempertahankan pelanggan yang sering datang relatif rendah
 baru), sehingga reward yang lebih besar tetap aman secara margin.
 
 Sel-sel ini bukan aturan keras yang menghasilkan satu nilai diskrit.
-Dalam inferensi Mamdani, satu input yang bukan-eksak akan men-trigger
-beberapa sel sekaligus dengan derajat keanggotaan masing-masing. Sebagai
-ilustrasi: input frekuensi 2,5 dan spending 200k men-trigger empat sel
-secara bersamaan --- (\texttt{regular}, \texttt{low}),
-(\texttt{regular}, \texttt{medium}), (\texttt{frequent}, \texttt{low}),
-dan (\texttt{frequent}, \texttt{medium}) --- masing-masing dengan
-kekuatan firing yang berbeda. Output akhir adalah pusat massa terbobot
-dari empat sel itu, dihitung lewat defuzzifikasi centroid pada
-sub-bagian berikutnya. Inilah mekanisme yang membuat output fuzzy
-halus melewati transisi antar sel, alih-alih melompat dari satu nilai
-diskrit ke nilai lain seperti pada skema bertingkat.
+Dalam inferensi Mamdani, satu input yang berada di area overlap dua MF
+secara sekaligus akan men-trigger beberapa sel dengan derajat
+keanggotaan masing-masing. Sebagai ilustrasi konkret, ambil input
+frekuensi 4 dan spending 150k. Pada titik ini, frekuensi punya derajat
+keanggotaan 0,333 di \texttt{regular} dan 0,333 di \texttt{frequent}.
+Spending punya derajat 0,333 di \texttt{low} dan 0,25 di \texttt{medium}.
+Empat sel firing secara bersamaan: (\texttt{regular}, \texttt{low})
+dengan kekuatan 0,333; (\texttt{regular}, \texttt{medium}) dengan
+kekuatan 0,25; (\texttt{frequent}, \texttt{low}) dengan kekuatan 0,333;
+dan (\texttt{frequent}, \texttt{medium}) dengan kekuatan 0,25. Output
+akhir adalah pusat massa terbobot dari empat sel itu, dihitung lewat
+defuzzifikasi centroid pada sub-bagian berikutnya. Untuk titik tersebut,
+fuzzy menghasilkan diskon sekitar 13,8\%. Inilah mekanisme yang membuat
+output fuzzy halus melewati transisi antar sel, alih-alih melompat dari
+satu nilai diskrit ke nilai lain seperti pada skema bertingkat.
 
 \subsection{Inferensi dan defuzzifikasi}
 
@@ -311,7 +329,10 @@ bukan demi akurasi terbaik (Sugeno bisa lebih akurat di kontrol presisi),
 melainkan karena setiap aturan harus bisa dibaca pemilik gerai yang
 bukan engineer. Defuzzifikasi pakai \emph{centroid of area}, yaitu
 pusat massa wilayah hasil agregasi, dihitung diskret di universe
-$[0, 25]$ dengan resolusi 0,1\%.
+diskon $[0, 25]\%$ dengan resolusi 0,1\%. Implementasi-nya pakai
+\texttt{np.arange(0, 25, 0.1)} yang menghasilkan 250 titik dari 0\%
+sampai 24,9\%, sudah cukup halus untuk hitung centroid presisi 0,01
+poin persentase di sekitar puncak MF output.
 
 Pilihan ini berimplikasi langsung ke perilaku output. Centroid sensitif
 terhadap luas total wilayah aktif, sehingga ketika beberapa aturan
@@ -403,22 +424,31 @@ VIP loyal heavy               & 6 & 480 & 22.3\% & 20\%  \\
 \end{tabular}
 \end{table}
 
-Baris ketiga (eksekutif, paket Rp~350k 1$\times$) adalah contoh yang saya
-maksud di pendahuluan: pelanggan jarang tapi spending besar. Skema
-bertingkat menempatkannya di tier menengah (10\%), sedangkan fuzzy
-memberi 15\%, karena aturan \texttt{rare AND high $\to$ medium} firing
-penuh dengan derajat keanggotaan tinggi pada \texttt{high} (sekitar 0,7
-untuk Rp~350k).
+Baris ketiga (Pak Budi, paket Rp~350k 1$\times$) adalah contoh
+pelanggan jarang tapi spending besar yang sudah saya bahas di
+Pendahuluan. Skema bertingkat menempatkannya di tier menengah 10\%.
+Sistem fuzzy memberi 15\%, dari aturan \texttt{rare AND high $\to$
+medium} yang firing dengan kekuatan 0,6. Angka 0,6 berasal dari
+$\min(\mu_{\texttt{rare}}=1{,}0, \mu_{\texttt{high}}=0{,}6)$ pada input
+(1, 350k). Karena output \texttt{medium} adalah triangle simetris yang
+puncaknya di 15, clipping pada level 0,6 menghasilkan trapezoid yang
+centroid-nya tetap di 15.
 
-Baris keempat menunjukkan kasus kebalikannya. Karyawan marketing yang
-sering ketemu klien dan harus tampil rapi, jadi datang tiga kali
-sebulan untuk paket cukur dan cuci dengan tarif Rp~110k. Total
-spending bulanannya Rp~330k. Pada skema bertingkat dia tetap di tier
-menengah (10\%), karena spending bulanannya masih di bawah threshold
-Rp~400k. Sistem fuzzy memberi 19,4\% karena aturan
-\texttt{regular AND medium $\to$ medium} firing penuh, diperkuat oleh
-\texttt{regular AND high $\to$ large} dengan derajat keanggotaan
-parsial pada \texttt{high}.
+Baris keempat (Mas Andi, 3$\times$ Rp~110k cukur+cuci, total Rp~330k)
+menunjukkan kasus yang lebih menarik. Skema bertingkat memberi 10\%.
+Trigger-nya bukan tunggal: \texttt{freq}$\geq3$ sudah cukup untuk tier
+10\%, dan \texttt{spend}$\geq$Rp~250k juga sudah cukup. Tapi karena
+\texttt{freq}$<5$ dan \texttt{spend}$<$Rp~400k, dia tidak naik ke tier
+20\%. Sistem fuzzy memberi 19,4\% melalui dua rule yang firing
+sekaligus pada input (3, 330k): \texttt{regular AND high $\to$ large}
+dengan kekuatan 0,44 (karena $\mu_{\texttt{high}}$ pada Rp~330k adalah
+0,44) dan \texttt{regular AND medium $\to$ medium} dengan kekuatan 0,16
+(karena $\mu_{\texttt{medium}}$ pada Rp~330k tinggal 0,16). Yang
+dominan adalah rule yang outputnya \texttt{large} (puncak di 22\%), dan
+itulah yang menggeser centroid hasil agregasi ke 19,4\%. Kemampuan
+menangkap kombinasi nonlinear seperti ini, yaitu mengangkat dua sisi
+medium-tinggi ke tier yang lebih tinggi, tidak dimiliki skema
+bertingkat yang outputnya cuma flat per tier.
 
 \subsection{Loncatan di ambang batas dihilangkan}
 
@@ -470,9 +500,11 @@ Silver'' mendapat diskon yang sedikit lebih tinggi daripada Bronze, tanpa
 harus melompat penuh ke Silver.
 
 Rata-rata diskon yang direkomendasikan fuzzy untuk 100 pelanggan adalah
-10,6\%, sementara skema bertingkat memberikan 9,4\%. Selisih kecil ini
-bukan masalah operasional, artinya bisnis yang beralih dari skema
-bertingkat ke fuzzy tidak akan mengalami penurunan margin yang berarti.
+10,78\%, sementara skema bertingkat memberikan 7,05\%. Rata-rata selisih
+absolut antar kedua metode di sample yang sama adalah 4,27 poin
+persentase. Selisih 3,7 poin pada rata-rata bukan masalah operasional.
+Artinya bisnis yang beralih dari skema bertingkat ke fuzzy tidak akan
+mengalami penurunan margin yang berarti.
 
 \subsection{Surface diskon}
 
